@@ -1,0 +1,36 @@
+{{- /*
+  Provenance banner for pages imported from a component repository.
+
+  Deliberately carries no edit/issue links of its own: the adapter sets Docsy's
+  github_repo / github_subdir / path_base_for_github_subdir page params, so the
+  theme's native "View page source" and "Edit this page" links already resolve to
+  the upstream file. This just tells the reader where the page came from.
+
+  Uses Docsy's intentionally-empty _td-content-after-header.html extension point,
+  so no theme template is overridden. Renders nothing for locally-authored pages.
+*/ -}}
+
+{{- with .Params.imported_url -}}
+  {{- $repo := $.Params.imported_from -}}
+  {{- $file := $.Params.imported_file -}}
+  <div class="agstack-imported d-flex align-items-start gap-2 mb-4" role="note">
+    <i class="fa-solid fa-code-branch mt-1" aria-hidden="true"></i>
+    <div>
+      Imported from
+      <a href="https://github.com/{{ $repo }}" target="_blank" rel="noopener"><code>{{ $repo }}</code></a>
+      &middot;
+      <a href="{{ . }}" target="_blank" rel="noopener"><code>docs/{{ $file }}</code></a>
+      <br />
+      <small class="text-body-secondary">
+        Edits belong in that repository, not in <code>agstack/docs</code>.
+        {{- with $.Params.imported_license }}
+          Licensed under
+          <a href="{{ $.Params.imported_license_url }}" target="_blank" rel="noopener">{{ . }}</a>,
+          {{/* nowrap rather than &nbsp;: the break happens at the hyphen in BY-SA,
+               which a non-breaking space does not prevent. */ -}}
+          not this site's <span class="text-nowrap">CC BY-SA 4.0</span>.
+        {{- end }}
+      </small>
+    </div>
+  </div>
+{{- end -}}

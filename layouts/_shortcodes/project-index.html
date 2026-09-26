@@ -1,0 +1,23 @@
+{{- /*
+  Lists the top-level project sections with their descriptions.
+
+  Docsy's own section-index partial cannot do this here. It selects children with
+  `where .Site.Pages "Section" .Section`, which works for a section page listing
+  its own children — but the sections are top level in this site, so on the home
+  page `.Section` is "" and the filter matches nothing. (It quietly renders an
+  empty <div> rather than failing, which is how this was missed at first.)
+
+  Reuses Docsy's .section-index / .entry markup so it picks up the theme's styling
+  instead of introducing a parallel one.
+*/ -}}
+<div class="section-index">
+  <hr class="panel-line" />
+  {{- range .Page.Site.Home.Sections.ByWeight }}
+    {{- if ne .Params.hide_summary true }}
+    <div class="entry">
+      <h5><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></h5>
+      <p>{{ .Description | markdownify }}</p>
+    </div>
+    {{- end }}
+  {{- end }}
+</div>

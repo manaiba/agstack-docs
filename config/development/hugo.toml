@@ -1,0 +1,9 @@
+# Overrides merged over config/_default/ when the environment is "development",
+# which is what `hugo server` uses unless told otherwise. `hugo` (the production
+# build, and what CI runs) defaults to "production" and never sees this file.
+#
+# The only reason this exists: the deployed site is a GitHub Pages *project* site,
+# so its baseURL carries the /docs/ path and the local server would
+# otherwise serve the home page at http://localhost:1313/docs/ too.
+# Locally there is nothing to share the host with, so serve from the root.
+baseURL = "http://localhost:1313/"

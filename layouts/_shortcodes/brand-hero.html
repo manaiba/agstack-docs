@@ -1,0 +1,22 @@
+{{- /*
+  Masthead for the documentation landing page: the full AgStack lockup above the
+  page's opening prose.
+
+  Not Docsy's blocks/cover: that shortcode always applies `td-overlay--dark` and
+  assumes light type over a dark or image background, whereas the lockup is drawn
+  for a light ground and carries its own near-black "A Linux Foundation Project"
+  tagline.
+
+  The path goes through relURL so it stays correct under the production baseURL,
+  which carries the /docs/ path of a GitHub Pages project site.
+*/ -}}
+<div class="agstack-hero">
+  <img
+    class="agstack-hero__lockup"
+    src="{{ "agstack-logo.svg" | relURL }}"
+    alt="AgStack — A Linux Foundation Project"
+    width="340"
+    height="156"
+  />
+  {{ with .Get "tagline" }}<p class="agstack-hero__tagline">{{ . }}</p>{{ end }}
+</div>

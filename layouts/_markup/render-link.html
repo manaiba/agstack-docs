@@ -1,0 +1,36 @@
+{{- /*
+  Link render hook: rewrite repo-relative `*.md` links into site URLs.
+
+  Documentation imported from a component repository is written to be read on
+  GitHub, so it cross-references sibling files by filename — e.g. pancake's TAP.md
+  contains `[BITE.md](BITE.md)`. Rendered as-is those become href="BITE.md", which
+  404s on the site. This hook resolves them to the real page.
+
+  Resolution order:
+    1. the slug the content adapter would have produced (lowercased, `_` -> `-`)
+    2. the literal path, for locally-authored content where the .md file is real
+    3. give up, leave the link alone, and warn at build time
+
+  Docsy ships no render-link hook of its own, so nothing is being overridden here.
+*/ -}}
+
+{{- $dest := .Destination -}}
+{{- $href := $dest -}}
+{{- $u := urls.Parse $dest -}}
+
+{{- if and (not $u.IsAbs) (not (hasPrefix $dest "#")) (hasSuffix (lower $u.Path) ".md") -}}
+  {{- $slug := path.BaseName $u.Path | lower | replaceRE `[_\s]+` "-" -}}
+  {{- $target := $.Page.GetPage $slug -}}
+  {{- if not $target -}}
+    {{- $target = $.Page.GetPage $u.Path -}}
+  {{- end -}}
+  {{- with $target -}}
+    {{- $href = .RelPermalink -}}
+  {{- else -}}
+    {{- warnf "render-link: could not resolve %q linked from %q" $dest $.Page.RelPermalink -}}
+  {{- end -}}
+  {{- with $u.Fragment -}}
+    {{- $href = printf "%s#%s" $href . -}}
+  {{- end -}}
+{{- end -}}
+<a href="{{ $href }}"{{ with .Title }} title="{{ . }}"{{ end }}>{{ .Text }}</a>

@@ -1,0 +1,98 @@
+//
+// Project styles. Kept deliberately small: the palette in _variables_project.scss
+// does most of the work through Bootstrap, and this file only adds things the
+// variables cannot express.
+//
+
+// The logo's defining feature is the lime -> green -> cyan -> blue progression, so
+// echo it as a hairline under the navbar. Same order as the lenses, top to bottom.
+.td-navbar {
+  border-bottom: 3px solid transparent;
+  border-image: linear-gradient(
+      90deg,
+      #a3d641 0%,
+      #34a37e 33%,
+      #1eafc6 66%,
+      #0570d1 100%
+    )
+    1;
+}
+
+// The inlined navbar mark is monochrome and inherits colour from the brand link,
+// which Docsy renders in the navbar's foreground colour.
+.navbar-brand__logo svg {
+  height: 2rem;
+  width: auto;
+  vertical-align: middle;
+}
+
+// Masthead on the documentation landing page. Sits inside the normal docs content
+// column rather than spanning the viewport: this is a docs page with a sidebar,
+// not a marketing splash, so a full-bleed band would fight the layout.
+.agstack-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  text-align: center;
+  border-bottom: 1px solid var(--bs-border-color);
+
+  &__lockup {
+    width: min(18rem, 70%);
+    height: auto;
+  }
+
+  &__tagline {
+    margin: 0;
+    max-width: 34rem;
+    font-size: 1.1rem;
+    color: var(--bs-secondary-color);
+  }
+}
+
+// The lockup's wordmark and tagline are near-black, so on a dark background it
+// loses its lower half. Give it a light plate to sit on rather than recolouring
+// artwork we do not own.
+@mixin agstack-lockup-plate {
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  box-sizing: border-box;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-bs-theme='light']) .agstack-hero__lockup {
+    @include agstack-lockup-plate;
+  }
+}
+
+:root[data-bs-theme='dark'] .agstack-hero__lockup {
+  @include agstack-lockup-plate;
+}
+
+// The landing page is the documentation index, so its <h1> would simply repeat
+// the wordmark directly above it. The lockup is the masthead instead; the title
+// still reaches the browser tab and search results through <title>.
+.td-home .td-content > h1:first-of-type {
+  @include visually-hidden;
+}
+
+// Provenance banner on imported pages. Deliberately not a Bootstrap `.alert`:
+// alert-secondary picks up $secondary, which is now the brand green and reads as
+// a success state, and alert-info would claim the reader needs to act on it. This
+// is a quiet note about where the page came from, so it gets a neutral surface
+// with the cyan as an accent.
+.agstack-imported {
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  border-left: 3px solid $agstack-cyan;
+  background-color: var(--bs-tertiary-bg);
+  color: var(--bs-body-color);
+
+  code {
+    background: none;
+    padding: 0;
+  }
+}

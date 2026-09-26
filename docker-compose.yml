@@ -1,0 +1,49 @@
+# Preview and build the site without installing Node or Hugo on the host.
+#
+#   docker compose up serve          http://localhost:1313/
+#   docker compose run --rm build    production build into ./public
+#
+# A bare `git clone` is enough: the entrypoint fetches submodules into the bind
+# mount and installs the toolchain on first run.
+#
+# Note there are deliberately NO named volumes for node_modules. Docker creates a
+# volume's mountpoint inside the bind mount as root, which then blocks both the
+# submodule checkout and `npm ci` for the unprivileged container user. Letting
+# node_modules live in the working tree — written by uid 1000, same as the host
+# user — avoids that entirely, and keeps it inspectable from the host.
+
+x-common: &common
+  build: .
+  image: agstack/docs:local
+  # `:z` relabels the bind-mounted tree to container_file_t. Without it, on any
+  # SELinux-enforcing host (Fedora, RHEL, CentOS), a checkout under $HOME carries
+  # user_home_t, which container processes may not read — the mount then fails
+  # with "Permission denied" despite being world-readable. Ignored elsewhere.
+  volumes:
+    - .:/src:z
+  environment:
+    # The container user may not exist in /etc/passwd when APP_UID is overridden,
+    # so point HOME and the npm cache somewhere always writable.
+    HOME: /tmp
+    NPM_CONFIG_CACHE: /tmp/.npm
+  # Defaults to the image's `node` user. Override in a .env file if your host
+  # account is not uid 1000, so files written into the mount stay yours:
+  #   APP_UID=1001
+  #   APP_GID=1001
+  user: "${APP_UID:-1000}:${APP_GID:-1000}"
+
+services:
+  serve:
+    <<: *common
+    ports:
+      - "1313:1313"
+    command: >
+      npm run hugo -- server
+      --bind 0.0.0.0
+      --port 1313
+      --disableFastRender
+
+  build:
+    <<: *common
+    profiles: ["cli"]
+    command: npm run build

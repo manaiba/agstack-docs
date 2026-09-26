@@ -1,0 +1,7 @@
+[submodule "external/pancake"]
+	path = external/pancake
+	url = https://github.com/agstack/pancake.git
+	branch = main
+[submodule "themes/docsy"]
+	path = themes/docsy
+	url = https://github.com/google/docsy.git

@@ -1,0 +1,4 @@
+# The image carries no project files — everything, including the entrypoint,
+# arrives at run time through the bind mount in docker-compose.yml. Keeping the
+# build context empty makes `docker compose build` independent of the working tree.
+*

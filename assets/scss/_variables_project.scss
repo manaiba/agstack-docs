@@ -1,0 +1,64 @@
+//
+// AgStack brand palette.
+//
+// Every value below is lifted directly from the logo (agstack-color-site2-01.svg),
+// whose <style> block defines exactly five fills. The four stacked lenses run
+// lime -> green -> cyan -> blue from top to bottom; the wordmark reuses the green
+// and the blue; the tagline is the near-black.
+//
+//   #a3d641  lime      top lens
+//   #34a37e  green     second lens, "Ag"
+//   #1eafc6  cyan      third lens
+//   #0570d1  blue      bottom lens, "Stack"
+//   #2b2b2b  ink       "A Linux Foundation Project"
+//
+// Loaded before Bootstrap's own variables, which are declared `!default`, so plain
+// assignment wins. See https://www.docsy.dev/docs/content/lookandfeel/
+//
+
+$agstack-lime: #a3d641;
+$agstack-green: #34a37e;
+$agstack-cyan: #1eafc6;
+$agstack-blue: #0570d1;
+$agstack-ink: #2b2b2b;
+
+// Neutrals mixed from the ink rather than pure grey, so surfaces sit under the
+// brand hues instead of beside them.
+$agstack-mist: #f4f7fa;
+$agstack-line: #dde4ec;
+
+// --- Bootstrap named colours ------------------------------------------------
+//
+// Docsy's own utilities (.td-box--blue, .-bg-blue, and the link colour inside
+// white and light section blocks) resolve to Bootstrap's *named* colours rather
+// than to the theme colours below, so these need aligning too or those surfaces
+// keep rendering in stock Bootstrap blue.
+
+$blue: $agstack-blue;
+$cyan: $agstack-cyan;
+$green: $agstack-green;
+
+// --- Bootstrap theme colours -----------------------------------------------
+
+$primary: $agstack-blue;
+$secondary: $agstack-green;
+$info: $agstack-cyan;
+$success: $agstack-green;
+$warning: $agstack-lime;
+$dark: $agstack-ink;
+$light: $agstack-mist;
+
+// Left to Bootstrap's default red: none of the five brand colours reads as
+// "danger", and inventing one would make destructive states ambiguous.
+
+$body-color: $agstack-ink;
+$border-color: $agstack-line;
+
+// --- Docsy ------------------------------------------------------------------
+
+// Docsy derives the navbar from this rather than from $primary directly.
+$td-navbar-bg-color: $agstack-blue;
+
+// The lime is never used as a text colour — only as a block fill, where
+// Bootstrap's colour-contrast() picks dark type to sit on it.
+$min-contrast-ratio: 3;
