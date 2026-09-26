@@ -19,7 +19,7 @@ jobs:
     name: Build site
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           # Without this, external/ is EMPTY and the build produces a site with
           # silently missing sections rather than an error. The content adapters
