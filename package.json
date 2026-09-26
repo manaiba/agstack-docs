@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "hugo-extended": "0.164.0",
-    "sass-embedded": "1.103.1"
+    "sass-embedded": "1.105.0"
   },
   "engines": {
     "node": ">=24",
