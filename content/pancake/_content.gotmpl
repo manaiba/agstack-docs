@@ -1,0 +1,138 @@
+{{/*
+  Content adapter for docs imported from the agstack/pancake submodule.
+
+  Upstream files are plain GitHub-flavoured Markdown with no Hugo front matter.
+  Mounting them directly into content/ produces pages whose `.Title` is empty,
+  because Hugo does not fall back to the filename. This adapter instead reads them
+  from assets/ and synthesises each page:
+
+    * title   — the file's own first `# H1`, falling back to a humanised filename
+    * body    — that H1 removed, so Docsy's <h1> is not duplicated
+    * path    — lowercased, `_` normalised to `-` (TAP_VENDOR_GUIDE.md -> tap-vendor-guide)
+    * weight  — from $order below; anything unlisted sorts after, alphabetically
+    * params  — provenance, so layouts can point "edit this page" at the right repo
+
+  To import another repository: add the submodule, add a module mount into
+  assets/imported/<name>, and copy this file into content/<name>/.
+*/}}
+
+{{- $repo := "agstack/pancake" -}}
+{{- $branch := "main" -}}
+{{- $assetDir := "imported/pancake" -}}
+
+{{/* Imported pages carry the licence of the repository they come from, NOT this
+     site's CC BY-SA 4.0 — so it has to be stated per source. SPDX identifier and
+     the path to the licence file in that repo. */}}
+{{- $license := "EUPL-1.2" -}}
+{{- $licenseFile := "LICENSE" -}}
+
+{{/* This adapter's own directory, relative to the project root. Used only to
+     rewrite Docsy's source/edit links away from this template. */}}
+{{- $sectionDir := "content/pancake" -}}
+
+{{/* Nav order is the *site's* decision, not the component repo's. Files absent
+     from this list still get published, ordered after these and alphabetically. */}}
+{{- $order := slice "PANCAKE.md" "BITE.md" "TAP.md" "TAP_VENDOR_GUIDE.md" "MEAL.md" "SIP.md" "SIRUP.md" "api-reference.md" -}}
+
+{{- $resources := resources.Match (printf "%s/*.md" $assetDir) -}}
+
+{{- if not $resources -}}
+  {{- errorf "content adapter %q: no Markdown found under assets/%s — did you run `git submodule update --init --recursive`?" $repo $assetDir -}}
+{{- end -}}
+
+{{- range $resources -}}
+  {{- $file := path.Base .Name -}}
+  {{- $raw := .Content -}}
+
+  {{/*
+    Strip YAML front matter if the upstream file happens to have any. AddPage
+    treats `content.value` as a body, not as a file, so front matter left in place
+    would render as a horizontal rule followed by raw `title: ...` text. Component
+    repos are not required to carry front matter, but they are allowed to.
+  */}}
+  {{- $fm := dict -}}
+  {{- $body := $raw -}}
+  {{- if hasPrefix $raw "---" -}}
+    {{- with findRESubmatch `(?s)\A---\r?\n(.*?)\r?\n---\r?\n(.*)\z` $raw 1 -}}
+      {{- $match := index . 0 -}}
+      {{- $body = index $match 2 -}}
+      {{- with transform.Unmarshal (index $match 1) -}}
+        {{- $fm = . -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{/*
+    Lift a *leading* H1 out of the body. Docsy always renders `<h1>{{ .Title }}</h1>`,
+    so a document that opens with `# Heading` would show that heading twice —
+    whatever the title ends up being. Only a leading H1 is touched: an `# ...` line
+    further down is a real section heading and is left alone.
+  */}}
+  {{- $body = strings.TrimLeft "\r\n \t" $body -}}
+  {{- $h1 := "" -}}
+  {{- if hasPrefix $body "#" -}}
+    {{- with findRESubmatch `\A#[ \t]+(.+?)[ \t]*\r?\n` $body 1 -}}
+      {{- $h1 = index (index . 0) 1 -}}
+      {{- $body = replaceRE `\A#[ \t]+.+?[ \t]*\r?\n` "" $body 1 -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{/* Title: upstream front matter wins, then the leading H1, then the filename. */}}
+  {{- $title := "" -}}
+  {{- with $fm.title -}}
+    {{- $title = . -}}
+  {{- end -}}
+  {{- if not $title -}}
+    {{- $title = $h1 -}}
+  {{- end -}}
+  {{- if not $title -}}
+    {{- $title = replace (path.BaseName $file) "_" " " | humanize | title -}}
+    {{- warnf "content adapter %q: %s has neither front matter nor a leading H1; falling back to filename title %q" $repo $file $title -}}
+  {{- end -}}
+
+  {{/* TAP_VENDOR_GUIDE.md -> tap-vendor-guide */}}
+  {{- $slug := path.BaseName $file | lower | replaceRE `[_\s]+` "-" -}}
+
+  {{/* Explicit nav order, with unlisted files pushed to the end. */}}
+  {{- $weight := 9000 -}}
+  {{- range $i, $name := $order -}}
+    {{- if eq $name $file -}}
+      {{- $weight = mul (add $i 1) 10 -}}
+    {{- end -}}
+  {{- end -}}
+
+  {{/*
+    Docsy's "View page source" / "Edit this page" links are computed from `.File`.
+    Adapter-generated pages DO have one — it resolves to *this template* — so
+    without the params below Docsy sends readers to _content.gotmpl instead of the
+    Markdown they are reading. path_base_for_github_subdir is Docsy's escape
+    hatch: a {from, to} regex rename applied to the computed repo path.
+  */}}
+  {{- $ghParams := dict
+        "github_repo"   (printf "https://github.com/%s" $repo)
+        "github_branch" $branch
+        "github_subdir" "docs"
+        "path_base_for_github_subdir" (dict
+          "from" (printf `^%s/_content\.gotmpl$` $sectionDir)
+          "to"   $file
+        )
+  -}}
+
+  {{- $params := merge $ghParams (dict
+        "imported_from" $repo
+        "imported_file" $file
+        "imported_url"  (printf "https://github.com/%s/blob/%s/docs/%s" $repo $branch $file)
+        "imported_license" $license
+        "imported_license_url" (printf "https://github.com/%s/blob/%s/%s" $repo $branch $licenseFile)
+        "hide_feedback" true
+  ) -}}
+
+  {{- $.AddPage (dict
+        "kind" "page"
+        "path" $slug
+        "title" $title
+        "weight" $weight
+        "content" (dict "mediaType" "text/markdown" "value" $body)
+        "params" $params
+      ) -}}
+{{- end -}}

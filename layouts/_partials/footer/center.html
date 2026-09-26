@@ -1,0 +1,31 @@
+{{- /*
+  Superset of Docsy's footer/center.html: the theme's copyright, its optional
+  privacy-policy and about links kept intact so configuring either later still
+  works, plus the licence line.
+
+  The licence has to be stated here rather than only on a page, because the two
+  tiers are easy to get wrong: pages authored in this repository are CC BY-SA 4.0,
+  while pages imported from a component repository carry that repository's licence
+  (pancake, for instance, is EUPL-1.2). Imported pages say so in their own banner.
+*/ -}}
+
+{{ partial "footer/copyright.html" . -}}
+
+{{ with .Site.Params.privacy_policy -}}
+  <span class="ms-2"><a href="{{ . }}" target="_blank" rel="noopener">{{ T "footer_privacy_policy" }}</a></span>
+{{- end -}}
+
+{{ if or .Site.Params.ui.footer_about_enable (eq .Site.Params.ui.footer_about_disable false) -}}
+  {{ with .Site.GetPage "about" -}}
+    <p class="td-footer__about mt-2"><a href="{{ .RelPermalink }}">{{ .Title }}</a></p>
+  {{- end -}}
+{{ end -}}
+
+<p class="td-footer__license mt-2 small">
+  {{- with .Site.GetPage "/contributing/licensing" -}}
+    Documentation licensed <a href="{{ .RelPermalink }}">CC BY-SA 4.0</a>
+  {{- else -}}
+    Documentation licensed
+    <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>
+  {{- end }}, except imported pages, which follow their source repository.
+</p>

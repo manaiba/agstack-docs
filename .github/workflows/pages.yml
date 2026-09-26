@@ -1,0 +1,67 @@
+name: Build and deploy to Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to main supersedes an in-flight deploy.
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Without this, external/ is EMPTY and the build produces a site with
+          # silently missing sections rather than an error. The content adapters
+          # under content/ call errorf when their mount resolves to nothing,
+          # specifically so that this failure is loud instead of silent.
+          submodules: recursive
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # Installs the pinned hugo-extended binary (see package.json). npm >= 11.18
+      # blocks postinstall scripts unless allowed, which package.json does.
+      - name: Install build toolchain
+        run: npm ci
+
+      - name: Install Docsy theme dependencies
+        run: npm run install:theme-deps --prefix themes/docsy
+
+      - name: Build
+        env:
+          HUGO_ENVIRONMENT: production
+        run: npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+  deploy:
+    name: Deploy
+    # Deploy only from main; pull requests build to verify, then stop.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

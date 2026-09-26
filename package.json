@@ -1,0 +1,26 @@
+{
+  "name": "agstack-docs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "AgStack documentation site (Hugo + Docsy)",
+  "license": "Apache-2.0",
+  "scripts": {
+    "hugo": "hugo",
+    "serve": "hugo server --bind 0.0.0.0",
+    "build": "hugo --minify",
+    "check": "hugo --minify --printPathWarnings"
+  },
+  "devDependencies": {
+    "hugo-extended": "0.164.0",
+    "sass-embedded": "1.103.1"
+  },
+  "engines": {
+    "node": ">=24",
+    "npm": ">=11.18.0"
+  },
+  "//allowScripts": "npm >=11.18 blocks postinstall scripts by default. hugo-extended's postinstall is what downloads the pinned Hugo binary, so it must be allowed explicitly (pinned to the exact version on purpose).",
+  "allowScripts": {
+    "hugo-extended@0.164.0": true,
+    "sass-embedded": false
+  }
+}

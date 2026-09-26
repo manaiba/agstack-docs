@@ -1,0 +1,40 @@
+version: 2
+
+updates:
+  # Bumps the pinned commit of every submodule under external/ and themes/.
+  #
+  # This is what keeps imported documentation from silently going stale: a
+  # submodule records an exact commit, so without these PRs the site would keep
+  # publishing whatever each component repo looked like on the day it was added.
+  # Each PR's diff is the upstream documentation change, which makes it a
+  # reasonable editorial review point rather than pure churn.
+  - package-ecosystem: "gitsubmodule"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps(submodule)"
+    labels:
+      - dependencies
+      - imported-docs
+
+  # Hugo (via hugo-extended) and Dart Sass.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "deps(npm)"
+    labels:
+      - dependencies
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    commit-message:
+      prefix: "deps(actions)"
+    labels:
+      - dependencies

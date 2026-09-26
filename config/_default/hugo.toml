@@ -1,0 +1,119 @@
+baseURL = "https://agstack.github.io/agstack-docs/"
+title = "AgStack Documentation"
+
+# Docsy v0.17 moved the theme into a subdirectory of its repository.
+theme = "docsy/theme"
+
+locale = "en-us"
+defaultContentLanguage = "en"
+enableRobotsTXT = true
+
+# Off deliberately: pages mounted from submodules have no git history in *this*
+# repo, so lastmod would be wrong or empty for exactly the pages we import.
+enableGitInfo = false
+
+# Mounted filenames are upstream's (BITE.md, TAP_VENDOR_GUIDE.md), so let Hugo
+# normalise them into URLs rather than trying to rename anything in-place.
+disablePathToLower = false
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+
+[markup]
+  [markup.goldmark.renderer]
+    unsafe = true
+  [markup.goldmark.parser]
+    [markup.goldmark.parser.attribute]
+      block = true
+      title = true
+  [markup.highlight]
+    style = "tango"
+    lineNos = false
+    noClasses = false
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 3
+
+# ----------------------------------------------------------------------------
+# Multi-repo wiring.
+#
+# This is the whole mechanism. Each documented component repo is a git submodule
+# under external/ (pinned to an exact commit in .gitmodules), and Hugo mounts its
+# docs directory into this site's content tree. No symlinks.
+#
+# GOTCHA: declaring ANY mount for a component removes Hugo's default mount for
+# that component. We mount into BOTH `content` and `assets`, so the project's own
+# content/ and assets/ directories must each be re-declared explicitly or they
+# vanish from the build — silently, because a missing mount is not an error.
+# static/, layouts/, data/, i18n/ and archetypes/ keep their defaults, as no mount
+# is declared for them.
+# ----------------------------------------------------------------------------
+[module]
+  [[module.mounts]]
+    source = "content"
+    target = "content"
+
+  # Re-declared default. Without this the site's own assets/ — the navbar logo and
+  # the SCSS that carries the brand palette — is not in the build at all, and the
+  # theme's defaults silently win.
+  [[module.mounts]]
+    source = "assets"
+    target = "assets"
+
+  # Imported docs land in assets/, NOT content/, and are turned into pages by the
+  # content adapter at content/pancake/_content.gotmpl.
+  #
+  # Why not mount straight into content/: upstream Markdown has no front matter,
+  # and Hugo does not derive a title from the filename — `.Title` is simply empty,
+  # which yields a blank <title>, a blank Docsy <h1>, and blank sidebar labels.
+  # Going through assets/ lets the adapter synthesise the title from each file's
+  # own H1 and drop that now-duplicated heading from the body.
+  [[module.mounts]]
+    source = "external/pancake/docs"
+    target = "assets/imported/pancake"
+
+[params]
+  copyright = "The AgStack Foundation"
+  github_repo = "https://github.com/agstack/agstack-docs"
+  github_branch = "main"
+  # Suppress Docsy's "Edit this page" on imported pages: the file the reader
+  # would edit does not live in this repo. See layouts/_partials/page-meta-links.html.
+  archived_version = false
+  offlineSearch = false
+
+[params.ui]
+  # The navbar background is now the brand blue (see $td-navbar-bg-color in
+  # assets/scss/_variables_project.scss), so its foreground has to flip. This adds
+  # data-bs-theme="dark" to the navbar, which turns the links, the site title and
+  # the currentColor logo mark white.
+  navbar_theme = "dark"
+  breadcrumb_disable = false
+  # Renders assets/icons/logo.svg inline in the navbar. Ours is the AgStack mark
+  # with fill="currentColor", so it takes the navbar's foreground colour.
+  navbar_logo = true
+  sidebar_menu_compact = false
+  sidebar_menu_foldable = true
+  sidebar_search_disable = true
+  showLightDarkModeMenu = true
+  [params.ui.readingtime]
+    enable = false
+
+[params.links]
+  [[params.links.developer]]
+    name = "GitHub"
+    url = "https://github.com/agstack"
+    icon = "fab fa-github"
+    desc = "All AgStack repositories"
+
+[[menu.main]]
+  name = "agstack.org"
+  weight = 40
+  url = "https://agstack.org"
+  pre = "<i class='fas fa-globe'></i>"
+
+[[menu.main]]
+  name = "GitHub"
+  weight = 50
+  url = "https://github.com/agstack"
+  pre = "<i class='fab fa-github'></i>"
